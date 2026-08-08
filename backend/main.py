@@ -161,21 +161,27 @@ from fastapi import HTTPException
 async def download_file(filename: str):
     """Download generated Excel file"""
 
-    # Prevent path traversal
-    if ".." in filename or "/" in filename or "\\" in filename:
-        raise HTTPException(status_code=400, detail="Invalid filename")
+    # Validate filename safely
+    filename_path = Path(filename)
+
+    # Reject path traversal while allowing legitimate ".." in filenames
+    if (
+        filename_path.name != filename
+        or filename in (".", "..")
+        or "/" in filename
+        or "\\" in filename
+    ):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid filename"
+        )
 
     filepath = OUTPUT_DIR / filename
-
-    print(f"Download requested: {filename}")
-    print(f"Output directory: {OUTPUT_DIR}")
-    print(f"Full file path: {filepath}")
-    print(f"File exists: {filepath.exists()}")
 
     if not filepath.exists():
         raise HTTPException(
             status_code=404,
-            detail=f"File not found: {filename}"
+            detail="File not found"
         )
 
     return FileResponse(
@@ -183,7 +189,6 @@ async def download_file(filename: str):
         filename=filename,
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
-
 
 @app.get("/api/health")
 async def health_check():
