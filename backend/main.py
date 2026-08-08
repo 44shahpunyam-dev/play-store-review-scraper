@@ -154,22 +154,34 @@ async def scrape_reviews(request: ScrapeRequest):
         raise HTTPException(status_code=500, detail=f"Scraping failed: {str(e)}")
 
 
+from fastapi.responses import FileResponse
+from fastapi import HTTPException
+
 @app.get("/api/download/{filename}")
 async def download_file(filename: str):
     """Download generated Excel file"""
-    # Validate filename to prevent path traversal
+
+    # Prevent path traversal
     if ".." in filename or "/" in filename or "\\" in filename:
         raise HTTPException(status_code=400, detail="Invalid filename")
-    
+
     filepath = OUTPUT_DIR / filename
-    
+
+    print(f"Download requested: {filename}")
+    print(f"Output directory: {OUTPUT_DIR}")
+    print(f"Full file path: {filepath}")
+    print(f"File exists: {filepath.exists()}")
+
     if not filepath.exists():
-        raise HTTPException(status_code=404, detail="File not found")
-    
+        raise HTTPException(
+            status_code=404,
+            detail=f"File not found: {filename}"
+        )
+
     return FileResponse(
-        path=filepath,
+        path=str(filepath),
         filename=filename,
-        media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
 
 
