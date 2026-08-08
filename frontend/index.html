@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Play Store Reviews Scraper</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1 class="title">Play Store Reviews Scraper</h1>
+            <p class="subtitle">Extract Google Play Store reviews based on date, hint and rating.</p>
+        </header>
+
+        <!-- Main Form -->
+        <main class="main-content">
+            <!-- Section 1: Play Store URL -->
+            <section class="form-section card">
+                <h2 class="section-heading"><span class="section-number">1</span> Enter Google Play Store App Link</h2>
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="playStoreUrl" 
+                        class="input-field"
+                        placeholder="https://play.google.com/store/apps/details?id=com.example.app"
+                        aria-label="Google Play Store URL"
+                    >
+                    <span id="urlError" class="error-message"></span>
+                </div>
+            </section>
+
+            <!-- Section 2: Date Range -->
+            <section class="form-section card">
+                <h2 class="section-heading"><span class="section-number">2</span> Select Date Range (Reviews Date)</h2>
+                <div class="date-group">
+                    <div class="form-group">
+                        <label for="fromDate" class="label">From Date</label>
+                        <input 
+                            type="date" 
+                            id="fromDate" 
+                            class="input-field"
+                            aria-label="From date"
+                        >
+                        <span id="dateError" class="error-message"></span>
+                    </div>
+                    <div class="form-group">
+                        <label for="toDate" class="label">To Date</label>
+                        <input 
+                            type="date" 
+                            id="toDate" 
+                            class="input-field"
+                            aria-label="To date"
+                        >
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3: Hint -->
+            <section class="form-section card">
+                <h2 class="section-heading"><span class="section-number">3</span> Hint</h2>
+                <div class="form-group">
+                    <input 
+                        type="text" 
+                        id="hint" 
+                        class="input-field"
+                        placeholder="Please enter the hint which you want to find. If not, leave empty."
+                        aria-label="Hint text"
+                    >
+                    <p class="helper-text">The hint will match text or emoji at the END of reviews (case-insensitive for text).</p>
+                </div>
+            </section>
+
+            <!-- Section 4: Rating -->
+            <section class="form-section card">
+                <h2 class="section-heading"><span class="section-number">4</span> Rating</h2>
+                <div class="rating-selector">
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="0" 
+                            checked
+                            class="rating-radio"
+                            aria-label="All ratings"
+                        >
+                        <span class="rating-label">All</span>
+                    </label>
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="5"
+                            class="rating-radio"
+                            aria-label="5 star rating"
+                        >
+                        <span class="rating-label">5 ★</span>
+                    </label>
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="4"
+                            class="rating-radio"
+                            aria-label="4 star rating"
+                        >
+                        <span class="rating-label">4 ★</span>
+                    </label>
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="3"
+                            class="rating-radio"
+                            aria-label="3 star rating"
+                        >
+                        <span class="rating-label">3 ★</span>
+                    </label>
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="2"
+                            class="rating-radio"
+                            aria-label="2 star rating"
+                        >
+                        <span class="rating-label">2 ★</span>
+                    </label>
+                    <label class="rating-option">
+                        <input 
+                            type="radio" 
+                            name="rating" 
+                            value="1"
+                            class="rating-radio"
+                            aria-label="1 star rating"
+                        >
+                        <span class="rating-label">1 ★</span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Scrape Button -->
+            <button id="scrapeBtn" class="btn-primary" aria-label="Start scraping reviews">
+                Start Scraping
+            </button>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="loading-state hidden">
+                <div class="spinner"></div>
+                <p id="statusMessage" class="status-message">Connecting to Google Play Store...</p>
+            </div>
+
+            <!-- Results Section -->
+            <section id="resultsSection" class="results-section card hidden">
+                <h2 class="section-heading">Results</h2>
+                
+                <div id="resultMessage" class="result-message"></div>
+                
+                <div id="previewContainer" class="preview-container hidden">
+                    <h3>Preview (First 20 Results)</h3>
+                    <div class="table-wrapper">
+                        <table id="previewTable" class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Review</th>
+                                    <th>Rating</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="previewBody">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <button id="downloadBtn" class="btn-primary hidden" aria-label="Download Excel file">
+                    Download Excel
+                </button>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Google Play Store Reviews Scraper © 2026</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
