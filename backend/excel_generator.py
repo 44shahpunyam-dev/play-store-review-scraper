@@ -1,11 +1,29 @@
 import pandas as pd
 from pathlib import Path
+import re
 
 
 class ExcelGenerator:
     def __init__(self):
         self.columns = ['User', 'Review', 'Package ID', 'Rating', 'Date', 'Time']
     
+    @staticmethod
+    def get_filename(app_name: str, hint: str, from_date: str, to_date: str) -> str:
+        """
+        Format filename as: AppName_Hint_Date.xlsx
+        """
+        clean_app = re.sub(r'[\\/*?:"<>|\0]', '_', app_name).strip()
+        clean_app = re.sub(r'\s+', '_', clean_app)
+        
+        date_part = from_date if from_date == to_date else f"{from_date}_to_{to_date}"
+        
+        if hint and hint.strip():
+            clean_hint = re.sub(r'[\\/*?:"<>|\0]', '_', hint.strip())
+            clean_hint = re.sub(r'\s+', '_', clean_hint)
+            return f"{clean_app}_{clean_hint}_{date_part}.xlsx"
+        else:
+            return f"{clean_app}_{date_part}.xlsx"
+
     def generate(self, reviews: list, filepath: Path):
         """
         Generate Excel file from reviews list.
