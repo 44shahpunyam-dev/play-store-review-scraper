@@ -67,6 +67,19 @@ def validate_dates(from_date: str, to_date: str):
         raise ValueError(f"Invalid date format or range: {str(e)}")
 
 
+def get_app_name(package_id: str) -> str:
+    """Fetch Play Store app title or fallback to package ID."""
+    try:
+        from google_play_scraper import app as play_app
+        details = play_app(package_id, lang='en', country='in')
+        title = details.get('title', '')
+        if title:
+            return title
+    except Exception:
+        pass
+    return package_id
+
+
 @app.post("/api/scrape")
 async def scrape_reviews(request: ScrapeRequest):
     """Main scraping endpoint"""
@@ -103,11 +116,14 @@ async def scrape_reviews(request: ScrapeRequest):
         # Generate Excel file
         generator = ExcelGenerator()
         
-        # Determine filename
-        if request.from_date == request.to_date:
-            filename = f"Live_{package_id}_{request.from_date}.xlsx"
-        else:
-            filename = f"Live_{package_id}_{request.from_date}_to_{request.to_date}.xlsx"
+        # Determine filename as: AppName_Hint_Date.xlsx
+        app_name = get_app_name(package_id)
+        filename = generator.get_filename(
+            app_name=app_name,
+            hint=request.hint,
+            from_date=request.from_date,
+            to_date=request.to_date
+        )
         
         filepath = OUTPUT_DIR / filename
         
