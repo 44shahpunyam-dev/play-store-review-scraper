@@ -9,8 +9,8 @@ import os
 from pathlib import Path
 import sys
 
-from scraper import ReviewScraper
-from excel_generator import ExcelGenerator
+from backend.scraper import ReviewScraper
+from backend.excel_generator import ExcelGenerator
 
 app = FastAPI()
 
