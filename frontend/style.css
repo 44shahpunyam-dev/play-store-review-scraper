@@ -505,3 +505,36 @@ body {
         max-width: 1000px;
     }
 }
+/* ===== HERO RESPONSIVE ===== */
+
+@media (max-width: 768px) {
+
+    .header {
+        padding: 30px 25px;
+    }
+
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .hero-text {
+        text-align: center;
+        max-width: 100%;
+    }
+
+    .title {
+        font-size: 32px;
+    }
+
+    .subtitle {
+        font-size: 16px;
+        margin: 0 auto;
+    }
+
+    .hero-image {
+        max-width: 390px;
+        width: 100%;
+    }
+}
