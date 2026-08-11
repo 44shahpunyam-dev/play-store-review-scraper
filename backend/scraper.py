@@ -109,22 +109,93 @@ class ReviewScraper:
         except Exception as e:
             print(f"Scraping error: {str(e)}")
             raise Exception(f"Failed to scrape reviews: {str(e)}")
-    
-    def _matches_hint(self, review_text: str, hint: str) -> bool:
-        """
-        Check if hint appears at the END of review text.
-        Matching is case-insensitive for text, exact for emojis/symbols.
-        Also ensures exact count (e.g. '...' will not match '....').
-        
-        Args:
-            review_text: The review content
-            hint: The hint to search for at the end
-        
-        Returns:
-            True if hint is found at the end of review
-        """
-        if not hint:
-            return True
+   def _matches_hint(self, review_text: str, hint: str) -> bool:
+    """
+    Check if any of the supplied hints appears at the END of the review.
+
+    Multiple hints must be separated using |.
+
+    Example:
+        "!! | @ | ; | ... | 👍"
+
+    Matching:
+        - Text: case-insensitive
+        - Emojis/symbols: exact
+        - Must occur at the END of the review
+        - Exact repeated-character count is enforced
+          (e.g. "..." does not match "....")
+    """
+
+    if not hint:
+        return True
+
+    cleaned_review = review_text.rstrip()
+
+    if not cleaned_review:
+        return False
+
+    # Split multiple hints using |
+    hints = [
+        h.strip()
+        for h in hint.split("|")
+        if h.strip()
+    ]
+
+    if not hints:
+        return True
+
+    for current_hint in hints:
+
+        cleaned_hint = current_hint.rstrip()
+
+        if not cleaned_hint:
+            continue
+
+        review_len = len(cleaned_review)
+        hint_len = len(cleaned_hint)
+
+        if review_len < hint_len:
+            continue
+
+        # Check whether hint is at the end
+        is_unicode = any(ord(char) > 127 for char in cleaned_hint)
+
+        if is_unicode:
+            ends = cleaned_review.endswith(cleaned_hint)
+        else:
+            ends = cleaned_review.lower().endswith(
+                cleaned_hint.lower()
+            )
+
+        if not ends:
+            continue
+
+        # Prevent extra repeated characters.
+        #
+        # Example:
+        # hint = "..."
+        #
+        # "This is good..."   -> MATCH
+        # "This is good...."  -> NO MATCH
+        #
+        start_idx = review_len - hint_len
+
+        if start_idx > 0:
+            preceding_char = cleaned_review[start_idx - 1]
+            first_hint_char = cleaned_hint[0]
+
+            if is_unicode:
+                if preceding_char == first_hint_char:
+                    continue
+            else:
+                if preceding_char.lower() == first_hint_char.lower():
+                    continue
+
+        # One hint matched -> include review
+        return True
+
+    # None of the hints matched
+    return False
         
         # Strip trailing whitespace from review
         cleaned_review = review_text.rstrip()
