@@ -1,3 +1,4 @@
+import unicodedata
 from google_play_scraper import reviews, Sort
 from datetime import datetime, date
 import time
@@ -8,6 +9,24 @@ class ReviewScraper:
     def __init__(self):
         self.max_retries = 3
         self.retry_delay = 2
+
+    def _clean_text(self, text: str) -> str:
+        """
+        Strip whitespace and invisible Unicode control/formatting characters
+        such as \\u200e (LRM), \\u200f (RLM), \\u200b (zero-width space), \\ufeff (BOM), etc.
+        """
+        if not text:
+            return ""
+        text = text.strip(" \t\n\r\u200e\u200f\u200b\u200c\u200d\ufeff\xa0")
+        i = len(text) - 1
+        while i >= 0:
+            ch = text[i]
+            cat = unicodedata.category(ch)
+            if cat.startswith("Z") or cat in ("Cf", "Cc"):
+                i -= 1
+            else:
+                break
+        return text[:i + 1]
 
     def scrape(
         self,
@@ -96,11 +115,12 @@ class ReviewScraper:
                         # -----------------------------
                         # Hint filter
                         # -----------------------------
-                        review_text = review.get("content", "")
+                        raw_content = review.get("content", "")
+                        cleaned_content = self._clean_text(raw_content)
 
                         if hint:
                             if not self._matches_hint(
-                                review_text,
+                                raw_content,
                                 hint
                             ):
                                 continue
@@ -113,10 +133,7 @@ class ReviewScraper:
                                 "userName",
                                 "Unknown"
                             ),
-                            "Review": review.get(
-                                "content",
-                                ""
-                            ),
+                            "Review": cleaned_content,
                             "Package ID": package_id,
                             "Rating": f"{review_rating}/5",
                             "Date": review_date_obj.strftime(
@@ -179,17 +196,12 @@ class ReviewScraper:
         Emojis and symbols are matched exactly.
 
         Exact repeated-character count is enforced.
-
-        Therefore:
-
-            "This is good..."   -> MATCH
-            "This is good...."  -> NO MATCH
         """
 
         if not hint:
             return True
 
-        cleaned_review = review_text.rstrip()
+        cleaned_review = self._clean_text(review_text)
 
         if not cleaned_review:
             return False
@@ -211,7 +223,7 @@ class ReviewScraper:
         # -----------------------------------------
         for current_hint in hints:
 
-            cleaned_hint = current_hint.rstrip()
+            cleaned_hint = self._clean_text(current_hint)
 
             if not cleaned_hint:
                 continue
